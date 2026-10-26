@@ -1,0 +1,53 @@
+#!/bin/sh
+# RepoHealth-SafePush pre-push hook.
+# Blocks a push when a HIGH-severity secret is found in tracked files.
+# It prints only file:line and the secret type — never the secret value.
+#
+# Install (from your repo root, in Git Bash on Windows, or any shell):
+#   cp hooks/pre-push .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+# Bypass for one push (git's standard hook bypass, use only deliberately):
+#   git push --no-verify
+#
+# This hook needs only grep. It scans files git tracks; outside a git
+# repo it scans the working tree except .git, node_modules, .venv,
+# dist and __pycache__.
+
+blocked=0
+
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  files=$(git ls-files)
+else
+  files=$(find . -type f -not -path "./.git/*" -not -path "*/node_modules/*" -not -path "*/.venv/*" -not -path "*/dist/*" -not -path "*/__pycache__/*" 2>/dev/null)
+fi
+
+# check LABEL REGEX — prints file:line + label for each match, no values.
+check() {
+  label="$1"
+  regex="$2"
+  for f in $files; do
+    [ -f "$f" ] || continue
+    grep -H -n -E "$regex" "$f" 2>/dev/null | while IFS=: read -r _file lineno _rest; do
+      echo "SafePush BLOCKED: $f:$lineno — $label (move it to an environment variable)"
+    done
+    if grep -H -q -E "$regex" "$f" 2>/dev/null; then
+      blocked=1
+    fi
+  done
+}
+
+check "AWS access key" 'AKIA[0-9A-Z]{16}'
+check "GitHub token" 'ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|ghu_[A-Za-z0-9]{20,}|ghs_[A-Za-z0-9]{20,}|ghr_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}'
+check "Slack token" 'xox[baprs]-[A-Za-z0-9-]{10,}'
+check "OpenAI key" 'sk-[A-Za-z0-9]{20,}'
+check "Private key" 'BEGIN [A-Z ]*PRIVATE KEY'
+
+if [ "$blocked" -eq 1 ]; then
+  echo ""
+  echo "SafePush: push blocked — a HIGH secret was found above."
+  echo "Remove the secret (use an environment variable), then push again."
+  echo "Only bypass deliberately with: git push --no-verify"
+  exit 1
+fi
+
+exit 0

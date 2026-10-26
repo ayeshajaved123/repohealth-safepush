@@ -1,0 +1,7 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+pydantic>=2.7,<3
+# httpx is only needed by Starlette's test client; the GitHub client
+# itself uses the standard library (see github.py).
+httpx>=0.27,<1
+pytest>=8.0,<9
