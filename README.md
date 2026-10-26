@@ -1,6 +1,6 @@
 # RepoHealth — Good code deserves a health check.
 
-**Team Paradox** | Hacktoberfest Hack Day NSTP 2026 | Inspect any public GitHub repository and get a transparent, explained health score — computed live from the GitHub API, never guessed.
+Inspect any public GitHub repository and get a transparent, explained health score — computed live from the GitHub API, never guessed.
 
 RepoHealth answers a simple question judges, maintainers, and contributors all ask: is this repository actually maintained? It fetches real repository data, scores it with a published formula, explains every point, charts the last 12 weeks of commits, and lists the next fixes in priority order.
 
