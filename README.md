@@ -144,4 +144,4 @@ A high score means a project's public signals look healthy. It does not prove th
 
 ## Author
 
-Team Paradox — member names and individual contributions are editable and must be confirmed by the team owner before submission. Do not submit with invented members.
+Ayesha Javed 
